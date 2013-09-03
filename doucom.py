@@ -5,11 +5,13 @@ import http.cookiejar
 import webbrowser
 from bs4 import BeautifulSoup
 
-username='yudawang@outlook.com'
-password='swbeautyatH2Oyf'
+username='xxxxxxxx'
+password='xxxxxxxx'
 log_file_name='log.txt'
 COUNT=100
 ALOT=12
+start=1000001
+stop=80000000
 
 cj = http.cookiejar.LWPCookieJar()
 opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cj))
@@ -87,7 +89,7 @@ def main():
 	log_file=open(log_file_name,'a')
 	log_file.write('[')
 	count=0
-	for id in range(1000001,80000000):
+	for id in range(start,stop):
 		find_itr(id,log_file)
 		count=count+1
 		if count>COUNT:
