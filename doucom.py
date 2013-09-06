@@ -3,15 +3,19 @@ import urllib.request
 import urllib.parse
 import http.cookiejar
 import webbrowser
+import threading
+import queue
+import time
 from bs4 import BeautifulSoup
 
-username='xxxxxxxx'
-password='xxxxxxxx'
+username='xxxxxxx'
+password='xxxxxxx'
 log_file_name='log.txt'
-COUNT=100
-ALOT=12
+COUNT=10000
+ALOT=15
 start=1000001
-stop=80000000
+stop=75000000
+Thread_num=100
 
 cj = http.cookiejar.LWPCookieJar()
 opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cj))
@@ -83,20 +87,36 @@ def sort(log_file_name,sorted_file_name,not_compl):
 	f.write(sorted_log)
 	f.close
 
+lock=threading.Lock()
+	
+def download(q,log_file):
+	while(True):
+		id=q.get()
+		find_itr(id,log_file)
+		q.task_done()
 
 def main():
 	common={}
 	log_file=open(log_file_name,'a')
-	log_file.write('[')
+	if start==1000001:
+		log_file.write('[')
 	count=0
-	for id in range(start,stop):
-		find_itr(id,log_file)
-		count=count+1
-		if count>COUNT:
-			count=0
-			log_file.close()
-			sort(log_file_name,log_file_name,1)
-			log_file=open(log_file_name,'a')
+	current=start
+	q=queue.Queue()
+	for i in range(Thread_num):
+		t=threading.Thread(target=download,args=(q,log_file))
+		t.setDaemon(True)
+		t.start()
+	while(True):
+		for i in range(current,current+COUNT):
+			q.put(i)
+		q.join()
+		# log_file.close()
+		# sort(log_file_name,log_file_name,1)
+		# log_file=open(log_file_name,'a')
+		current=current+COUNT+1
+		if current>stop:
+			break
 	log_file.write(']')
 	log_file.close()
 	sort(log_file_name,log_file_name,0)
